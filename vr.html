@@ -1,22 +1,90 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Quest 3S - Миний анхны VR ертөнц</title>
+    <title>Миний Интерактив VR Сургалтын Өрөө</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-extras@v0.1.0/dist/aframe-physics-extras.min.js"></script>
+    <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+    <script src="https://unpkg.com/super-hands@^3.0.0/dist/super-hands.min.js"></script>
+
+    <style>
+      body { margin: 0; overflow: hidden; }
+      #loadingScreen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: sans-serif;
+        font-size: 2em;
+        z-index: 9999;
+      }
+    </style>
   </head>
   <body>
-    <a-scene>
-      <a-sky color="#242424"></a-sky>
+    <div id="loadingScreen">
+      Loading VR Room...
+    </div>
 
-      <a-plane position="0 0 0" rotation="-90 0 0" width="10" height="10" color="#7BC8A4"></a-plane>
+    <a-scene
+      physics="gravity: -9.8; restitution: 0.1;"
+      vr-mode-ui="enabled: true"
+      loading-screen="enabled: false"
+      renderer="colorManagement: true; antialias: true;"
+      inspector="url: https://cdn.jsdelivr.net/gh/aframevr/aframe-inspector@master/dist/aframe-inspector.min.js"
+    >
+      <a-entity id="rig" movement-controls="speed: 0.1" position="0 0 0">
+        <a-entity id="head" camera look-controls="pointerLockEnabled: false" position="0 1.6 0">
+          <a-cursor position="0 0 -0.1" scale="0.01 0.01 0.01" geometry="primitive: ring; radiusInner: 0.005; radiusOuter: 0.01;" material="color: cyan; shader: flat"></a-cursor>
+        </a-entity>
 
-      <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" animation="property: rotation; to: 0 405 0; loop: true; dur: 5000"></a-box>
-      <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E" shadow></a-sphere>
-      <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D"></a-cylinder>
+        <a-entity
+          id="leftHand"
+          oculus-touch-controls="hand: left"
+          hand-tracking-controls="hand: left"
+          super-hands="colliderEvent: collision; colliderEventProperty: els; grabStartButtons: trackpaddown, triggerdown, grip; grabEndButtons: trackpadup, triggerup, grip; stretchStartButtons: triggerdown; stretchEndButtons: triggerup;"
+          collision-filter="group: hand; mask: default"
+          sphere-collider="objects: .grabbable"
+        ></a-entity>
 
-      <a-entity position="0 0 3">
-        <a-camera></a-camera>
+        <a-entity
+          id="rightHand"
+          oculus-touch-controls="hand: right"
+          hand-tracking-controls="hand: right"
+          super-hands="colliderEvent: collision; colliderEventProperty: els; grabStartButtons: trackpaddown, triggerdown, grip; grabEndButtons: trackpadup, triggerup, grip; stretchStartButtons: triggerdown; stretchEndButtons: triggerup;"
+          collision-filter="group: hand; mask: default"
+          sphere-collider="objects: .grabbable"
+        ></a-entity>
       </a-entity>
+
+      <a-entity light="type: ambient; color: #BBB"></a-entity>
+      <a-entity light="type: directional; color: #FFF; intensity: 0.6; position: -3 5 1"></a-entity>
+
+      <a-plane static-body position="0 0 0" rotation="-90 0 0" width="10" height="10" color="#7BC8A4"></a-plane> <a-box static-body position="-5 2.5 0" width="0.2" height="5" depth="10" color="#ADD8E6"></a-box> <a-box static-body position="5 2.5 0" width="0.2" height="5" depth="10" color="#ADD8E6"></a-box> <a-box static-body position="0 2.5 -5" width="10" height="5" depth="0.2" color="#ADD8E6"></a-box> <a-box static-body position="0 2.5 5" width="10" height="5" depth="0.2" color="#ADD8E6"></a-box> <a-plane static-body position="0 5 0" rotation="90 0 0" width="10" height="10" color="#D3D3D3"></a-plane> <a-box class="grabbable" dynamic-body="shape: box" position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9" width="0.8" height="0.8" depth="0.8"></a-box>
+      <a-sphere class="grabbable" dynamic-body="shape: sphere" position="0 1.25 -2" radius="0.6" color="#EF2D5E"></a-sphere>
+      <a-cylinder class="grabbable" dynamic-body="shape: cylinder" position="1 0.75 -3" radius="0.4" height="1.0" color="#FFC65D"></a-cylinder>
+      <a-torus-knot class="grabbable" dynamic-body="shape: box" position="-2 0.75 1" radius="0.5" tube="0.1" p="2" q="3" color="#6A0DAD"></a-torus-knot>
+      <a-dodecahedron class="grabbable" dynamic-body="shape: box" position="2 0.75 1" radius="0.6" color="#3CB371"></a-dodecahedron>
+
+      <a-text value="VR Interactive Room" position="-2.5 4 -4.8" width="5" align="center" color="#FFFFFF"></a-text>
+      <a-text value="Grab objects with your hands/controllers!" position="-2.5 3.5 -4.8" width="5" align="center" color="#CCCCCC"></a-text>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const loadingScreen = document.getElementById('loadingScreen');
+          const scene = document.querySelector('a-scene');
+
+          // A-Frame-ийн ачаалал дууссаны дараа loadingScreen-ийг нуух
+          scene.addEventListener('loaded', () => {
+            loadingScreen.style.display = 'none';
+          });
+        });
+      </script>
     </a-scene>
   </body>
 </html>
